@@ -1,0 +1,39 @@
+# meta数据库相关配置
+db_meta:
+  host: localhost
+  port: 3306
+  user: ${oc.env:MYSQL_USER}
+  password: ${oc.env:MYSQL_PASSWORD}
+  database: meta
+
+# dw数据库相关配置
+db_dw:
+  host: localhost
+  port: 3306
+  user: ${oc.env:MYSQL_USER}
+  password: ${oc.env:MYSQL_PASSWORD}
+  database: dw
+
+# 向量数据库相关配置
+qdrant:
+  host: localhost
+  port: 6333
+  embedding_size: 1024
+
+# embedding模型相关配置
+embedding:
+  host: localhost
+  port: 8081
+  model: BAAI/bge-large-zh-v1.5
+
+# ES相关配置
+es:
+  host: localhost
+  port: 9200
+  index_name: data_agent
+
+# 模型相关配置
+llm:
+  model_name: Pro/zai-org/GLM-5.1
+  api_key: ${oc.env:LLM_API_KEY}
+  base_url: https://api.siliconflow.cn/v1
