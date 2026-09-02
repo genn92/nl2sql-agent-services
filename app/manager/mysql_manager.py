@@ -6,20 +6,20 @@
 供应用其他模块统一使用。
 """
 
+from config.app_config import DBConfig, app_config
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
+    AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
-from config.app_config import DBConfig, app_config
 
-
-class MysqlManager:
+class MySQLManager:
     def __init__(self, config: DBConfig):
         self.config = config
         self.engine: AsyncEngine | None = None
-        self.session_factory = None
+        self.session_factory: async_sessionmaker[AsyncSession] | None = None
 
     def _get_url(self) -> str:
         """获取MySQL链接地址"""
@@ -43,12 +43,11 @@ class MysqlManager:
             await self.engine.dispose()
 
 
-dw_manager = MysqlManager(app_config.db_dw)
-meta_manager = MysqlManager(app_config.db_meta)
+dw_mysql_manager = MySQLManager(app_config.db_dw)
+meta_mysql_manager = MySQLManager(app_config.db_meta)
 
 if __name__ == "__main__":
     try:
-        dw_manager.init()
-        # meta_manager.init() # 这里为什么没有初始化？？？
+        meta_mysql_manager.init()
     except Exception as e:
         print("数据库连接失败:", e)

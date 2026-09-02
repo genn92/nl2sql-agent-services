@@ -24,7 +24,7 @@ class EmbeddingManager:
 
 
 # 创建Embedding管理对象
-embedding_manager = EmbeddingManager(app_config.embedding)
+embedding_manager: EmbeddingManager = EmbeddingManager(app_config.embedding)
 
 if __name__ == "__main__":
     try:
