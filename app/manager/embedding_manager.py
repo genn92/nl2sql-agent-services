@@ -5,8 +5,9 @@
 供应用其他模块统一使用。
 """
 
-from config.app_config import EmbeddingModelConfig, app_config
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
+
+from app.config.app_config import EmbeddingModelConfig, app_config
 
 
 class EmbeddingManager:

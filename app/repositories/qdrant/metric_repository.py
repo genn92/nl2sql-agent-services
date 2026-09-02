@@ -1,5 +1,5 @@
 from app.entities.metric_info_entity import MetricInfoEntity
-from repositories.qdrant.base_repository import BaseQdrantRepository
+from app.repositories.qdrant.base_repository import BaseQdrantRepository
 
 
 class MetricQdrantRepository(BaseQdrantRepository[MetricInfoEntity]):

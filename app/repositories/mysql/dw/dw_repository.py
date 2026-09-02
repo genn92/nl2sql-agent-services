@@ -15,7 +15,7 @@ import re
 
 from sqlalchemy import text
 
-from repositories.mysql.base_repository import BaseMySQLRepository
+from app.repositories.mysql.base_repository import BaseMySQLRepository
 
 # 标识符白名单：仅允许字母、数字、下划线，且以字母或下划线开头
 _IDENTIFIER_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")

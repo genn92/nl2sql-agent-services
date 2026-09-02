@@ -8,7 +8,7 @@ table_info 数据表元信息模型
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 
 class TableInfoModel(BaseModel):

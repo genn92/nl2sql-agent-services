@@ -10,9 +10,10 @@
 
 from typing import Generic, TypeVar
 
-from config.app_config import app_config
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.http.models import Distance, PointStruct, VectorParams
+
+from app.config.app_config import app_config
 
 T = TypeVar("T")
 

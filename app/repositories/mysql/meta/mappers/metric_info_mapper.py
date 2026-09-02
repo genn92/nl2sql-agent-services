@@ -10,9 +10,8 @@
 from dataclasses import asdict
 from typing import cast
 
-from models.metric_info_model import MetricInfoModel
-
 from app.entities.metric_info_entity import MetricInfoEntity
+from app.models.metric_info_model import MetricInfoModel
 
 
 class MetricInfoMapper:

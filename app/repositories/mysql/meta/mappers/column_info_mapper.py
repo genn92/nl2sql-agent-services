@@ -9,9 +9,8 @@
 
 from dataclasses import asdict
 
-from models.column_info_model import ColumnInfoModel
-
 from app.entities.column_info_entity import ColumnInfoEntity
+from app.models.column_info_model import ColumnInfoModel
 
 
 class ColumnInfoMapper:

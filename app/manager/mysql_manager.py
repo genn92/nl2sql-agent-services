@@ -6,13 +6,14 @@
 供应用其他模块统一使用。
 """
 
-from config.app_config import DBConfig, app_config
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+
+from app.config.app_config import DBConfig, app_config
 
 
 class MySQLManager:

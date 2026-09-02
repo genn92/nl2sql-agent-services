@@ -12,19 +12,19 @@
 import logging
 from typing import Any, Callable, Sequence
 
-from models.column_info_model import ColumnInfoModel
-from models.table_info_model import TableInfoModel
 from sqlalchemy import text
 
 from app.entities.column_info_entity import ColumnInfoEntity
 from app.entities.column_metric_entity import ColumnMetricEntity
 from app.entities.metric_info_entity import MetricInfoEntity
 from app.entities.table_info_entity import TableInfoEntity
-from repositories.mysql.base_repository import BaseMySQLRepository
-from repositories.mysql.meta.mappers.column_info_mapper import ColumnInfoMapper
-from repositories.mysql.meta.mappers.column_metric_mapper import ColumnMetricMapper
-from repositories.mysql.meta.mappers.metric_info_mapper import MetricInfoMapper
-from repositories.mysql.meta.mappers.table_info_mapper import TableInfoMapper
+from app.models.column_info_model import ColumnInfoModel
+from app.models.table_info_model import TableInfoModel
+from app.repositories.mysql.base_repository import BaseMySQLRepository
+from app.repositories.mysql.meta.mappers.column_info_mapper import ColumnInfoMapper
+from app.repositories.mysql.meta.mappers.column_metric_mapper import ColumnMetricMapper
+from app.repositories.mysql.meta.mappers.metric_info_mapper import MetricInfoMapper
+from app.repositories.mysql.meta.mappers.table_info_mapper import TableInfoMapper
 
 logger = logging.getLogger(__name__)
 

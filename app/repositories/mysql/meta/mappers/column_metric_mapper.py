@@ -9,9 +9,8 @@
 
 from dataclasses import asdict
 
-from models.column_metric_model import ColumnMetricModel
-
 from app.entities.column_metric_entity import ColumnMetricEntity
+from app.models.column_metric_model import ColumnMetricModel
 
 
 class ColumnMetricMapper:

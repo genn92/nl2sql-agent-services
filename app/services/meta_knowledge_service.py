@@ -14,21 +14,21 @@ import uuid
 from dataclasses import asdict
 from pathlib import Path
 
-from config.meta_config import MetaConfig
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from omegaconf import OmegaConf
-from repositories.es.value_repository import ValueESRepository
-from repositories.mysql.dw.dw_repository import DWMySQLRepository
-from repositories.mysql.meta.meta_repository import MetaMySQLRepository
-from repositories.qdrant.column_repository import ColumnQdrantRepository
-from repositories.qdrant.metric_repository import MetricQdrantRepository
 
+from app.config.meta_config import MetaConfig
 from app.entities.column_info_entity import ColumnInfoEntity
 from app.entities.column_metric_entity import ColumnMetricEntity
 from app.entities.metric_info_entity import MetricInfoEntity
 from app.entities.table_info_entity import TableInfoEntity
 from app.entities.value_info_entity import ValueInfoEntity
 from app.logger.logger import logger
+from app.repositories.es.value_repository import ValueESRepository
+from app.repositories.mysql.dw.dw_repository import DWMySQLRepository
+from app.repositories.mysql.meta.meta_repository import MetaMySQLRepository
+from app.repositories.qdrant.column_repository import ColumnQdrantRepository
+from app.repositories.qdrant.metric_repository import MetricQdrantRepository
 
 
 class MetaKnowledgeService:

@@ -9,9 +9,8 @@
 
 from dataclasses import asdict
 
-from models.table_info_model import TableInfoModel
-
 from app.entities.table_info_entity import TableInfoEntity
+from app.models.table_info_model import TableInfoModel
 
 
 class TableInfoMapper:

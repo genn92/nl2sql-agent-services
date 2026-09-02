@@ -8,7 +8,7 @@ column_metric 列-指标关联模型
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 
 class ColumnMetricModel(BaseModel):

@@ -4,8 +4,9 @@
 `qdrant_manager`，供应用其他模块统一使用。
 """
 
-from config.app_config import QdrantConfig, app_config
 from qdrant_client import AsyncQdrantClient
+
+from app.config.app_config import QdrantConfig, app_config
 
 
 class QdrantManager:

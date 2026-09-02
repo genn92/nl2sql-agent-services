@@ -1,5 +1,5 @@
 from app.entities.column_info_entity import ColumnInfoEntity
-from repositories.qdrant.base_repository import BaseQdrantRepository
+from app.repositories.qdrant.base_repository import BaseQdrantRepository
 
 
 class ColumnQdrantRepository(BaseQdrantRepository[ColumnInfoEntity]):

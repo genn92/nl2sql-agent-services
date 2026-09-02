@@ -9,7 +9,7 @@ column_info 数据列元信息模型
 from sqlalchemy import JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 
 class ColumnInfoModel(BaseModel):

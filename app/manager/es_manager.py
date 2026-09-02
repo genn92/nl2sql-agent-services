@@ -4,8 +4,9 @@
 `es_manager`，供应用其他模块统一使用。
 """
 
-from config.app_config import ESConfig, app_config
 from elasticsearch import AsyncElasticsearch
+
+from app.config.app_config import ESConfig, app_config
 
 
 class ESManager:
