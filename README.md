@@ -13,6 +13,7 @@ cp .env.example .env
 ```
 
 然后在 `.env` 中填入实际值（如 `MYSQL_ROOT_PASSWORD`、`MYSQL_USER`、`MYSQL_PASSWORD` 等）。
+VS Code 工作区已在 `.vscode/settings.json` 中配置 `NO_PROXY`，避免本地服务请求被 HTTP 代理转发。修改后请新建一个 VS Code 集成终端使设置生效。
 
 ### 启动 Docker 服务
 

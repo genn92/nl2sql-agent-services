@@ -5,6 +5,7 @@
 供应用其他模块统一使用。
 """
 
+from huggingface_hub import AsyncInferenceClient, InferenceClient
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 from app.config.app_config import EmbeddingModelConfig, app_config
@@ -21,7 +22,13 @@ class EmbeddingManager:
 
     def init(self) -> None:
         """创建Embedding实例"""
-        self.client = HuggingFaceEndpointEmbeddings(model=self._get_url())
+        # self.client = HuggingFaceEndpointEmbeddings(model=self._get_url())
+        # HuggingFaceEndpointEmbeddings 的 model 参数只接受 HF repo ID，
+        # 实际的推理端点 URL 需要直接注入到底层 InferenceClient 中
+        self.client = HuggingFaceEndpointEmbeddings(model=self.config.model)
+        endpoint_url = f"{self._get_url()}/embed"
+        self.client.client = InferenceClient(model=endpoint_url)
+        self.client.async_client = AsyncInferenceClient(model=endpoint_url)
 
 
 # 创建Embedding管理对象

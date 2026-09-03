@@ -2,6 +2,8 @@
 
 NL2SQL 代理系统（中文项目：所有文档、注释和SQL均为中文）。这是一个面向中文数据分析的自然语言转SQL系统，集成多个后端服务。
 
+> **语言要求**：你必须始终使用中文回答用户的问题，包括代码注释、提交信息、文档等所有输出内容。
+
 ## 技术栈与工具
 
 - **Python版本**：Python 3.14，使用 `uv` 包管理器（`uv.lock` 在项目根目录）。**禁止使用pip**；应使用 `uv sync` 后执行 `.venv/bin/...` 或 `uv run ...`
@@ -10,7 +12,7 @@ NL2SQL 代理系统（中文项目：所有文档、注释和SQL均为中文）�
   - 格式化：`uv run ruff format .`
   - 配置在 `pyproject.toml` 中（行长88字符，检查规则：E/F/I）
 - **测试与CI**：无单元测试、无类型检查、无CI流程、无预提交钩子配置。Ruff 是唯一的代码质量把关工具
-- **版本控制**：Git仓库已初始化但尚无提交记录
+- **版本控制**：Git仓库已初始化，共有3次提交记录（main分支）
 
 ## 项目结构
 
@@ -116,8 +118,12 @@ docker compose --env-file .env -f docker/docker-compose.yaml down -v
   
 ### Elasticsearch 服务
 
-- 基于自定义 Dockerfile 构建
+- 基于自定义 Dockerfile 构建（ES 8.19.10 + IK 分词插件）
 - 支持自定义插件配置（`docker/elasticsearch/plugins/`）
+
+### Kibana 服务
+
+- ES 可视化面板，端口 5601
 
 ### 文本嵌入服务
 
@@ -153,7 +159,8 @@ docker compose --env-file .env -f docker/docker-compose.yaml down -v
 
 ### Qdrant 向量数据库
 
-存储列和指标的向量表示，支持语义搜索和相似度匹配
+- 存储列和指标的向量表示，支持语义搜索和相似度匹配
+- HTTP 端口 6333，gRPC 端口 6334
 
 ## 核心服务模块说明
 
