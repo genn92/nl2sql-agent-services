@@ -1,13 +1,60 @@
+"""指标信息过滤节点。
+
+调用 LLM 根据用户查询，从已召回的指标信息中筛选出相关的指标，
+将过滤后的结果写回代理状态。
+"""
+
+import yaml
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
 from langgraph.runtime import Runtime
 
+from app.agent import llm
 from app.agent.context import DataAgentContext
-from app.agent.state import DataAgentState
+from app.agent.state import DataAgentState, MetricInfoState
+from app.logger import logger
+from app.prompt.loader import load_prompt
 
 
 async def filter_metric(state: DataAgentState, runtime: Runtime[DataAgentContext]):
-    writer = runtime.stream_writer
-    writer("过滤指标信息")
+    stream_writer = runtime.stream_writer
+    step: str = "过滤指标信息"
+    stream_writer({"type": "progress", "step": step, "status": "running"})
 
-    import asyncio
+    try:
+        query = state.get("query")
+        metric_infos: list[MetricInfoState] = state.get("metric_infos", [])
+        # 创建提示词模板
+        prompt = PromptTemplate(
+            template=load_prompt("filter_metric_info"),
+            input_variables=["query", "metric_infos"],
+        )
+        # 创建调用链
+        out_parser = JsonOutputParser()
+        chain = prompt | llm | out_parser
 
-    await asyncio.sleep(1.5)
+        result = await chain.ainvoke(
+            {
+                "query": query,
+                "metric_infos": yaml.dump(
+                    metric_infos, allow_unicode=True, sort_keys=False
+                ),
+            }
+        )
+
+        # 过滤需要的指标信息
+        filtered_metric_infos: list[MetricInfoState] = [
+            metric_info for metric_info in metric_infos if metric_info["name"] in result
+        ]
+
+        logger.info(
+            f"过滤后的指标信息：{[filtered_metric_info['name'] for filtered_metric_info in filtered_metric_infos]}"
+        )
+
+        stream_writer({"type": "progress", "step": step, "status": "success"})
+        return {"metric_infos": filtered_metric_infos}
+
+    except Exception as e:
+        logger.error(f"{step} failed: {e}")
+        stream_writer({"type": "progress", "step": step, "status": "error"})
+        raise
