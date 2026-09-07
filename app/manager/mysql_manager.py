@@ -20,7 +20,14 @@ class MySQLManager:
     def __init__(self, config: DBConfig):
         self.config = config
         self.engine: AsyncEngine | None = None
-        self.session_factory: async_sessionmaker[AsyncSession] | None = None
+        self._session_factory: async_sessionmaker[AsyncSession] | None = None
+
+    @property
+    def session_factory(self) -> async_sessionmaker[AsyncSession]:
+        """获取会话工厂，未初始化时抛出异常"""
+        if self._session_factory is None:
+            raise RuntimeError("MySQLManager 尚未初始化，请先调用 init()")
+        return self._session_factory
 
     def _get_url(self) -> str:
         """获取MySQL链接地址"""
@@ -32,7 +39,7 @@ class MySQLManager:
             url=self._get_url(), pool_size=10, pool_pre_ping=True
         )
         # 创建会话工厂，之后即可通过 session_factory() 创建 AsyncSession 执行事务
-        self.session_factory = async_sessionmaker(
+        self._session_factory = async_sessionmaker(
             self.engine,
             autoflush=True,  # 自动刷新
             expire_on_commit=False,  # 提交后不过期

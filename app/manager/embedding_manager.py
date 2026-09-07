@@ -14,7 +14,14 @@ from app.config.app_config import EmbeddingModelConfig, app_config
 class EmbeddingManager:
     def __init__(self, config: EmbeddingModelConfig):
         self.config = config
-        self.client: HuggingFaceEndpointEmbeddings | None = None
+        self._client: HuggingFaceEndpointEmbeddings | None = None
+
+    @property
+    def client(self) -> HuggingFaceEndpointEmbeddings:
+        """获取Embedding客户端，未初始化时抛出异常"""
+        if self._client is None:
+            raise RuntimeError("EmbeddingManager 尚未初始化，请先调用 init()")
+        return self._client
 
     def _get_url(self) -> str:
         """获取配置的Embedding模型地址"""
@@ -22,13 +29,13 @@ class EmbeddingManager:
 
     def init(self) -> None:
         """创建Embedding实例"""
-        # self.client = HuggingFaceEndpointEmbeddings(model=self._get_url())
+        # self._client = HuggingFaceEndpointEmbeddings(model=self._get_url())
         # HuggingFaceEndpointEmbeddings 的 model 参数只接受 HF repo ID，
         # 实际的推理端点 URL 需要直接注入到底层 InferenceClient 中
-        self.client = HuggingFaceEndpointEmbeddings(model=self.config.model)
+        self._client = HuggingFaceEndpointEmbeddings(model=self.config.model)
         endpoint_url = f"{self._get_url()}/embed"
-        self.client.client = InferenceClient(model=endpoint_url)
-        self.client.async_client = AsyncInferenceClient(model=endpoint_url)
+        self._client.client = InferenceClient(model=endpoint_url)
+        self._client.async_client = AsyncInferenceClient(model=endpoint_url)
 
 
 # 创建Embedding管理对象

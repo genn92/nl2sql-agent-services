@@ -1,6 +1,5 @@
 import platform
 
-
 if __name__ == "__main__":
     # 1. 操作系统信息
     print("操作系统:", platform.system())  # 例如: Windows, Linux, Darwin[reference:2][reference:3]

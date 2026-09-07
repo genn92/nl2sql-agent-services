@@ -12,7 +12,14 @@ from app.config.app_config import QdrantConfig, app_config
 class QdrantManager:
     def __init__(self, config: QdrantConfig):
         self.config = config
-        self.client: AsyncQdrantClient | None = None
+        self._client: AsyncQdrantClient | None = None
+
+    @property
+    def client(self) -> AsyncQdrantClient:
+        """获取Qdrant客户端，未初始化时抛出异常"""
+        if self._client is None:
+            raise RuntimeError("QdrantManager 尚未初始化，请先调用 init()")
+        return self._client
 
     def _get_url(self) -> str:
         """获取配置的Qdrant实例地址"""
@@ -20,14 +27,14 @@ class QdrantManager:
 
     def init(self) -> None:
         """创建Qdrant客户端"""
-        self.client = AsyncQdrantClient(self._get_url())
+        self._client = AsyncQdrantClient(self._get_url())
 
     async def close(self) -> None:
         """关闭Qdrant客户端"""
-        if self.client is None:
+        if self._client is None:
             return
 
-        await self.client.close()
+        await self._client.close()
 
 
 # 创建Qdrant客户端管理对象

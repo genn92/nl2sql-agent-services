@@ -12,7 +12,14 @@ from app.config.app_config import ESConfig, app_config
 class ESManager:
     def __init__(self, config: ESConfig):
         self.config = config
-        self.client: AsyncElasticsearch | None = None
+        self._client: AsyncElasticsearch | None = None
+
+    @property
+    def client(self) -> AsyncElasticsearch:
+        """获取ES客户端，未初始化时抛出异常"""
+        if self._client is None:
+            raise RuntimeError("ESManager 尚未初始化，请先调用 init()")
+        return self._client
 
     def _get_url(self) -> str:
         """获取配置的实例地址"""
@@ -20,14 +27,14 @@ class ESManager:
 
     def init(self):
         """创建ES客户端"""
-        self.client = AsyncElasticsearch(hosts=[self._get_url()])
+        self._client = AsyncElasticsearch(hosts=[self._get_url()])
 
     async def close(self):
         """关闭ES客户端"""
-        if self.client is None:
+        if self._client is None:
             return
 
-        await self.client.close()
+        await self._client.close()
 
 
 # 创建ES实例管理对象

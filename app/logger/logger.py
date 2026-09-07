@@ -100,6 +100,3 @@ logging.root.setLevel(logging.INFO)
 for name in logging.root.manager.loggerDict.keys():
     logging.getLogger(name).handlers = []
     logging.getLogger(name).propagate = False
-
-# 导出配置好的 logger
-__all__ = ["logger"]

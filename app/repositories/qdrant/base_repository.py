@@ -54,12 +54,12 @@ class BaseQdrantRepository(Generic[T]):
         raise NotImplementedError()
 
     async def search(
-        self, vector: list[float], score_threshold: float, limit: int
+        self, vector: list[float], score_threshold: float = 0.6, limit: int = 20
     ) -> list[T]:
         result = await self.client.query_points(
             collection_name=self.collection_name,
             limit=limit,
-            vector=vector,
+            query=vector,
             score_threshold=score_threshold,
         )
 
