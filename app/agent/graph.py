@@ -23,6 +23,7 @@ DataAgentContext（各节点共享的基础设施依赖）。
 import asyncio
 
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from app.agent.context import DataAgentContext
 from app.agent.nodes.add_extra_context import add_extra_context
@@ -91,8 +92,10 @@ graph_builder.add_edge("correct_sql", "run_sql")
 graph_builder.add_edge("run_sql", END)
 
 
-graph = graph_builder.compile()
-print(graph.get_graph().draw_mermaid())
+graph: CompiledStateGraph[
+    DataAgentState, DataAgentContext, DataAgentState, DataAgentState
+] = graph_builder.compile()
+# print(graph.get_graph().draw_mermaid())
 
 
 if __name__ == "__main__":

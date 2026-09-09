@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "启动 FastAPI 开发服务器",
+            "type": "process",
+            "command": "uv",
+            "args": [
+                "run",
+                "fastapi",
+                "dev",
+                "main.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "problemMatcher": []
+        }
+    ]
+}

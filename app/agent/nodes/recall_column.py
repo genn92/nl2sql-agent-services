@@ -20,8 +20,8 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langgraph.runtime import Runtime
 
-from app.agent import llm
 from app.agent.context import DataAgentContext
+from app.agent.llm import llm
 from app.agent.state import DataAgentState
 from app.entities.column_info_entity import ColumnInfoEntity
 from app.logger import logger

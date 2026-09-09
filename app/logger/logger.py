@@ -1,19 +1,18 @@
 import logging
 import os
 import sys
-from contextvars import ContextVar
 from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
 
+from app.context.request_id_var import request_id_var
+
 # 移除loguru的默认配置
 logger.remove()
 
-# 当前请求的 request_id 上下文，默认 N/A
-request_id_var: ContextVar[str] = ContextVar("request_id", default="N/A")
 
-
+# 日志中注入请求id
 def _inject_request_id(record) -> None:
     # 每条日志渲染前，都用当前上下文中的 request_id 覆盖兜底值，
     # 实现跨模块的全局自动关联，无需手动 logger.bind()
