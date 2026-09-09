@@ -5,7 +5,7 @@
 - 接收用户中文自然语言问题
 - 通过语义召回、过滤和上下文补全找出最可能使用的表、列、指标和候选值
 - 调用大语言模型生成 SQL
-- 对生成的 SQL 做语法和逻辑校验
+- 对生成的 SQL 做语法与结构校验
 - 自动修正错误 SQL，并最终执行查询返回结果
 
 > 语言要求：所有用户回复、代码注释、提交信息和文档内容都必须使用中文。
@@ -73,21 +73,18 @@ Path(__file__).parents[2]
 
 ### 运行当前状态
 
-项目已经具备以下核心功能骨架：
+项目已具备完整的“HTTP → Agent → 查询结果”闭环：
 
-- Agent 图编排完成
-- SQL 生成节点已接入 LLM
-- SQL 校验节点已接入数据库校验
-- SQL 修正节点已接入 LLM 修正逻辑
-- SQL 执行节点已接入 DW MySQL 执行器
-
-但 `app/main.py` 还处于占位状态，当前正式链路入口仍是 `app/agent/graph.py`。
+- FastAPI 应用入口（根目录 `main.py`）已就绪，暴露 `POST /api/query` 流式接口
+- `app/services/query_service.py` 负责聚合仓储依赖、构造状态与上下文，并将执行过程以 SSE 返回
+- Agent 图编排完成，SQL 生成、校验、修正、执行节点均已接入 LLM 与 MySQL
+- FastAPI 依赖注入与 lifespan 已完成：请求级 Session + 全局客户端管理
 
 ## 项目结构
 
 ```text
+main.py                         # FastAPI 应用入口（uvicorn main:app）
 app/
-├── main.py                     # 当前占位脚本，尚未完成正式 FastAPI 应用入口
 ├── agent/
 │   ├── graph.py                # LangGraph StateGraph 编排与条件边
 │   ├── llm.py                  # LLM 客户端初始化
@@ -106,6 +103,13 @@ app/
 │       ├── validate_sql.py
 │       ├── correct_sql.py
 │       └── run_sql.py
+├── api/
+│   ├── dependencies.py         # FastAPI 依赖注入与仓储装配
+│   ├── lifespan.py             # 依赖服务启动/关闭
+│   ├── routers/
+│   │   └── query_router.py     # POST /api/query 流式路由
+│   └── schemas/
+│       └── query_schema.py     # 查询请求体 Schema
 ├── config/
 │   ├── app_config.py           # 配置加载器
 │   └── meta_config.py          # 元配置加载器
@@ -122,8 +126,9 @@ app/
 │   ├── es_manager.py
 │   ├── qdrant_manager.py
 │   └── embedding_manager.py
-├── middleware/
-│   └── request_id.py
+├── context/
+│   ├── __init__.py
+│   └── request_id_var.py       # ContextVar 请求 ID，供日志追踪
 ├── models/
 │   ├── base_model.py
 │   ├── table_info_model.py
@@ -147,8 +152,11 @@ app/
 │       ├── column_repository.py
 │       └── metric_repository.py
 ├── services/
+│   ├── __init__.py
+│   ├── query_service.py        # 查询服务：HTTP 层与 Agent 层桥接
 │   └── meta_knowledge_service.py
 ├── scripts/
+│   ├── __init__.py
 │   └── build_meta_knowledge.py
 └── __init__.py
 
@@ -180,9 +188,17 @@ prompts/
 logs/
 ```
 
-## 核心执行流程
+## 请求入口与核心执行流程
 
-`app/agent/graph.py` 中的链路是项目的核心：
+HTTP 入口位于根目录 `main.py`：FastAPI 暴露 `POST /api/query`，
+请求体为 `{"query": "..."}`，响应类型为 `text/event-stream`（SSE）。
+
+`app/services/query_service.py` 中的 `QueryService` 是 HTTP 层与 Agent 层的桥接：
+它按请求聚合 meta/dw MySQL 仓储与 Qdrant/ES/Embedding 客户端，构造
+`DataAgentState` 和 `DataAgentContext`，再调用 `graph.astream(...)`，
+将各节点经 `runtime.stream_writer` 写出的进度、结果与错误序列化为 SSE 消息。
+
+`app/agent/graph.py` 中的 LangGraph 链路是项目的核心：
 
 1. `extract_keywords`：关键词抽取
 2. `recall_column` / `recall_value` / `recall_metric`：三路召回
@@ -197,8 +213,11 @@ logs/
 其中：
 
 - `generate_sql` 与 `correct_sql` 使用 `PromptTemplate + llm + StrOutputParser`
-- `validate_sql` 会使用 `dw_mysql_repository.validate(sql)` 做合法性检查
-- `run_sql` 会调用 `dw_mysql_repository.run(sql)` 执行最终语句
+- `filter_table` / `filter_metric` 使用 `JsonOutputParser` 解析 LLM 返回的裁剪结果
+- `validate_sql` 会使用 `dw_mysql_repository.validate(sql)` 做 EXPLAIN 语法/结构检查
+- `run_sql` 会调用 `dw_mysql_repository.run(sql)` 执行只读 SELECT
+- SSE 事件目前包括 `progress`、`result`、`error` 三类
+- 当前 SQL 校验失败后只执行一次 `correct_sql`，修正结果直接进入 `run_sql`，暂无二次校验与多轮重试
 
 ## 配置管理规范
 
@@ -218,6 +237,9 @@ MYSQL_USER=genn
 MYSQL_PASSWORD=
 LLM_API_KEY=
 ```
+
+> 注意：`.env.example` 中变量值默认留空，复制后必须手工填写；
+> 其中 `MYSQL_USER` 必须为 `genn`（原因见下文“关键配置规则”）。
 
 ### YAML 配置
 
@@ -284,7 +306,21 @@ docker compose --env-file .env -f docker/docker-compose.yaml up -d
 uv run python -m app.scripts.build_meta_knowledge -c config/meta_config.yaml
 ```
 
-### 4. 本地调试 Agent
+### 4. 启动 FastAPI 服务
+
+```bash
+uv run uvicorn main:app --reload
+```
+
+也可以使用 FastAPI 开发服务器：
+
+```bash
+uv run fastapi dev main.py
+```
+
+服务启动后可向 `POST /api/query` 发送 JSON 请求，并通过 SSE 流式接收执行过程。
+
+### 5. 本地调试 Agent
 
 ```bash
 uv run python -m app.agent.graph
@@ -292,7 +328,7 @@ uv run python -m app.agent.graph
 
 该命令会构造测试上下文并以流式形式输出各节点状态。
 
-### 5. 检查代码质量
+### 6. 检查代码质量
 
 ```bash
 uv run ruff check .
@@ -308,11 +344,13 @@ uv run ruff format .
 
 ## 结论
 
-当前项目已经从“概念性 NL2SQL 架构”推进到“可运行的 Agent 流程骨架”，关键节点和依赖服务均已落到代码中。下一步重点应当放在：
+当前项目已经从“概念性 NL2SQL 架构”推进到“可运行的 API 闭环”，FastAPI 入口、
+QueryService、LangGraph 编排、多路召回与 SQL 生成/校验/修正/执行均已落地。
+后续维护重点应当放在：
 
-- 完善 FastAPI 应用入口
-- 测试真实 SQL 生成与校验链路
-- 修正运行中的 prompt 与数据库交互细节
-- 逐步补全实际查询对接逻辑
+- 端到端联调真实查询，并补充多轮 SQL 修正/二次校验
+- 完善 SSE 事件结构、超时与行数限制等生产化细节
+- 保证文档、元数据配置与实现持续同步
+- 让元知识库构建具备可重复执行的幂等语义
 
 这两份说明文件是项目的维护入口，后续新增功能时应同步更新。
